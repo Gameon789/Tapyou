@@ -36,20 +36,26 @@
         }
         /* Main circle button */
         #circle {
-            width: 150px;
-            height: 150px;
-            line-height: 150px;
-            background-color: #333;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 50%;
-            cursor: pointer;
-            user-select: none;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
-        }
+	  width: 180px;
+ 	  height: 180px;
+      border-radius: 50%;
+	  background-color: #333;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+ 	 font-size: 24px;
+ 	 font-weight: bold;
+	  color: white;
+ 	 margin: 20px auto;
+ 	 user-select: none;
+ 	 transition: background-color 0.3s;
+}
+.hidden-text {
+  visibility: hidden; /* text still “there” but invisible */
+}
+ 		
+  			
+        
         #circle:active {
             background-color: #555;
         }
