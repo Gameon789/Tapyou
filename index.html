@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reflex Testing Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        /* Center everything horizontally and vertically using Flexbox */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* center on main axis */
+            align-items: center;     /* center on cross axis */
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            text-align: center;
+        }
+        /* Row of lights */
+        .lights {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .light {
+            width: 20px;
+            height: 20px;
+            margin: 0 5px;
+            background-color: #600; /* dark red (off) */
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        .light.active {
+            background-color: #f00; /* bright red (on) */
+        }
+        /* Main circle button */
+        #circle {
+            width: 150px;
+            height: 150px;
+            line-height: 150px;
+            background-color: #333;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        #circle:active {
+            background-color: #555;
+        }
+        /* Message area */
+        #message {
+            font-size: 18px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="lights">
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+    </div>
+    <div id="circle">START</div>
+    <div id="message"></div>
+</div>
+
+<script>
+    // Select DOM elements
+    const lights = document.querySelectorAll('.light');
+    const circle = document.getElementById('circle');
+    const messageDiv = document.getElementById('message');
+
+    let timeouts = [];       // array to store timeout IDs so we can cancel if needed
+    let startTime = 0;       // timestamp when lights turn off
+    let gameState = 'ready'; // 'ready', 'running', 'waiting', 'done'
+
+    // Reset all lights to the "off" state
+    function resetLights() {
+        lights.forEach(light => {
+            light.classList.remove('active');
+        });
+    }
+
+    // Begin the light activation sequence
+    function startSequence() {
+        gameState = 'running';
+        messageDiv.textContent = '';
+        resetLights();
+        // Turn on each light in sequence (0ms, 500ms, 1000ms, 1500ms)
+        lights.forEach((light, index) => {
+            const tid = setTimeout(() => {
+                light.classList.add('active');
+            }, index * 500);
+            timeouts.push(tid);
+        });
+        // After the last light is on, wait 1000ms then turn all lights off
+        const offTid = setTimeout(() => {
+            resetLights();                    // lights off
+            startTime = performance.now();    // record time for reaction timing4
+            gameState = 'waiting';
+        }, (lights.length - 1) * 500 + 1000);
+        timeouts.push(offTid);
+    }
+
+    // Handle clicks on the main circle
+    circle.addEventListener('click', () => {
+        if (gameState === 'ready') {
+            // Start the light sequence on first click
+            startSequence();
+        } 
+        else if (gameState === 'running') {
+            // Clicked too early
+            // Cancel all scheduled timeouts
+            timeouts.forEach(tid => clearTimeout(tid));
+            timeouts = [];
+            resetLights();
+            messageDiv.textContent = 'Too Soon';
+            circle.textContent = 'RESTART';
+            gameState = 'done';
+        } 
+        else if (gameState === 'waiting') {
+            // Valid click after lights went off: compute reaction time
+            const reactionTime = Math.round(performance.now() - startTime);
+            messageDiv.textContent = 'Reaction Time: ' + reactionTime + ' ms';
+            circle.textContent = 'RESTART';
+            gameState = 'done';
+        } 
+        else if (gameState === 'done') {
+            // Reset the game to start over
+            circle.textContent = 'START';
+            messageDiv.textContent = '';
+            gameState = 'ready';
+        }
+    });
+</script>
+</body>
+</html>
